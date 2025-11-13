@@ -1,59 +1,66 @@
-import { useState, useEffect } from "react"
-import type { User } from "../types/User"
-import { TextField, Button, Stack } from "@mui/material"
+import React, { useState } from "react";
+import { TextField, Button, Box } from "@mui/material";
+import type { User } from "../pages/UserListPage";
 
-interface Props {
-  initialData?: Partial<User>
-  onSubmit: (data: Omit<User, "id">) => void
+interface UserFormProps {
+  user?: User;
+  onSave: (user: User) => void;
+  onCancel: () => void;
 }
 
-export default function UserForm({ initialData, onSubmit }: Props) {
-  const [name, setName] = useState(initialData?.name || "")
-  const [email, setEmail] = useState(initialData?.email || "")
-  const [age, setAge] = useState(initialData?.age || 0)
+const UserForm: React.FC<UserFormProps> = ({ user, onSave, onCancel }) => {
+  const [formData, setFormData] = useState<User>({
+    id: user?.id,
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+  });
 
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name || "")
-      setEmail(initialData.email || "")
-      setAge(initialData.age || 0)
-    }
-  }, [initialData])
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name || !email || !age) return alert("All fields are required")
-    onSubmit({ name, email, age })
-    setName("")
-    setEmail("")
-    setAge(0)
-  }
+    e.preventDefault();
+    onSave(formData);
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Stack spacing={2} sx={{ mt: 2 }}>
-        <TextField
-          label="Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Age"
-          type="number"
-          value={age}
-          onChange={e => setAge(Number(e.target.value))}
-          fullWidth
-        />
-        <Button type="submit" variant="contained">Save</Button>
-      </Stack>
-    </form>
-  )
-}
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+      <TextField
+        label="Name"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+      />
+      <TextField
+        label="Email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+      />
+      <TextField
+        label="Phone"
+        name="phone"
+        value={formData.phone}
+        onChange={handleChange}
+        required
+      />
+      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Button variant="outlined" color="inherit" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button variant="contained" color="success" type="submit">
+          {user ? "Update" : "Create"}
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+export default UserForm;
